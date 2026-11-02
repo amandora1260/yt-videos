@@ -1,7 +1,9 @@
 {
  "script": "scripts/test_short.json",
  "kind": "short",
- "ok": false,
- "started": "2026-11-02 15:29:48",
- "error": "cannot open resource"
+ "ok": true,
+ "started": "2026-11-02 15:31:47",
+ "seconds": 32.5,
+ "mb": 1.4,
+ "url": "https://raw.githubusercontent.com/amandora1260/yt-videos/main/videos/test_short.mp4"
 }
