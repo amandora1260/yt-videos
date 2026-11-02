@@ -1,0 +1,43 @@
+name: 動画づくり（原稿が届いたら自動実行）
+
+on:
+  push:
+    paths: ["scripts/**.json"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: video-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: 動画づくりの道具と日本語フォント
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-cjk
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy pillow scipy requests
+      - name: 原稿から動画を作る
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_TTS_MODELS: gemini-3.8-flash-tts,gemini-3.1-flash-tts-preview
+          VOICE_YAKI: Sulafat
+          VOICE_TOUMO: Puck
+          TTS_WAIT_SEC: "25"
+        run: |
+          ls scripts/*.json > /tmp/list.txt 2>/dev/null || true
+          python pipeline/src/run_ci.py $(cat /tmp/list.txt)
+      - name: 完成した動画と結果を保存
+        run: |
+          git config user.name "video-bot"
+          git config user.email "video-bot@users.noreply.github.com"
+          git add videos status
+          git diff --cached --quiet || git commit -m "動画を作成 $(date +%F)"
+          git pull --rebase -q && git push
