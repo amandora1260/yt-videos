@@ -1,0 +1,7 @@
+{
+ "script": "scripts/test_short.json",
+ "kind": "short",
+ "ok": false,
+ "started": "2026-11-02 15:29:48",
+ "error": "cannot open resource"
+}
