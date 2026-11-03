@@ -10,6 +10,12 @@ BG=(14,27,48); PANEL=(24,42,72); WHITE=(240,244,250); GRAY=(150,165,190); ACC=(5
 UP=(52,211,153); DN=(248,113,113)
 SPK_COL = {"焼きもろこし": (244,114,182), "とうもろこし": (250,204,21)}
 NO_HEAD = "。、）」』％%！？!?ー"
+# 字幕（画面下の話者名ラベル＋台詞の帯）を出すかどうか。kindごとの既定値で、原稿JSONに "show_subtitles": true/false を書けば個別に上書きできる。
+# 音声をまとめて作って無音で区切っているため字幕と声が1行ずれることがあり、当面は本編・ショートとも出さない（戻すときは True に）
+SHOW_SUBTITLES = {"main": False, "short": False}
+def show_subtitles(b):
+    v = b.get("show_subtitles")
+    return SHOW_SUBTITLES.get(b.get("kind", "main"), True) if v is None else bool(v)
 
 def wrap(d, text, font, maxw):
     lines, cur = [], ""
@@ -92,7 +98,7 @@ def build_video(b, audios, workdir, out_mp4):
         chars = [max(len(t["text"]),1) for t in s["dialogue"]]
         for t,c in zip(s["dialogue"], chars):
             n += 1; p = os.path.join(workdir, f"{n:03d}.png")
-            add_subtitle(base, t["speaker"], t["text"]).save(p)
+            (add_subtitle(base, t["speaker"], t["text"]) if show_subtitles(b) else base).save(p)
             entries.append((p, total*c/sum(chars)))
     wav = os.path.join(workdir, "voice.wav")
     import scipy.io.wavfile as wv

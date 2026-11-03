@@ -23,17 +23,18 @@ def frame(b, card, speaker, text, idx, total):
     d.text((W/2, 740), big, font=F("Black", fs), fill=col, anchor="mm")
     d.text((W/2, 890), c["small"], font=F("Bold", 50), fill=WHITE, anchor="mm")
     # 字幕：大きめ・画面中央寄り（下部のボタン類を避ける）
-    f = F("Bold", 62); lines = wrap(d, text, f, W - 300)   # 右の「いいね」ボタン列を避けて少し左寄せ
-    if len(lines) > 3:                                      # 長いせりふは文字を少し小さくして全部出す
-        f = F("Bold", 52); lines = wrap(d, text, f, W - 280)[:5]
-    top = 1040
-    nf = F("Bold", 44); col = SPK_COL.get(speaker, ACC)
-    tw = d.textlength(speaker, font=nf)
-    d.rounded_rectangle([W/2 - tw/2 - 30, top, W/2 + tw/2 + 30, top + 70], radius=14, fill=col)
-    d.text((W/2, top + 35), speaker, font=nf, fill=(15, 15, 25), anchor="mm")
-    y = top + 100
-    for l in lines:
-        d.text((W/2 - 70, y), l, font=f, fill=WHITE, anchor="ma", stroke_width=3, stroke_fill=(0, 0, 0)); y += int(f.size * 1.4)
+    if render.show_subtitles(b):                            # 字幕（話者名＋せりふ）は設定で切り替え（既定は出さない）
+        f = F("Bold", 62); lines = wrap(d, text, f, W - 300)   # 右の「いいね」ボタン列を避けて少し左寄せ
+        if len(lines) > 3:                                      # 長いせりふは文字を少し小さくして全部出す
+            f = F("Bold", 52); lines = wrap(d, text, f, W - 280)[:5]
+        top = 1040
+        nf = F("Bold", 44); col = SPK_COL.get(speaker, ACC)
+        tw = d.textlength(speaker, font=nf)
+        d.rounded_rectangle([W/2 - tw/2 - 30, top, W/2 + tw/2 + 30, top + 70], radius=14, fill=col)
+        d.text((W/2, top + 35), speaker, font=nf, fill=(15, 15, 25), anchor="mm")
+        y = top + 100
+        for l in lines:
+            d.text((W/2 - 70, y), l, font=f, fill=WHITE, anchor="ma", stroke_width=3, stroke_fill=(0, 0, 0)); y += int(f.size * 1.4)
     # 下部：チャンネル名と進み具合
     d.text((W/2, 1000), "とうもろこしの米国投資ちゃんねる", font=F("Medium", 38), fill=GRAY, anchor="mm")
     d.rectangle([0, H - 12, int(W * (idx + 1) / total), H], fill=ACC)

@@ -1,4 +1,4 @@
-"""本編：スライド＋字幕に、キャラクターの口パク・動きを重ねる"""
+"""本編：スライド（＋字幕。render.SHOW_SUBTITLES で切り替え）に、キャラクターの口パク・動きを重ねる"""
 import os, math, subprocess, numpy as np
 from PIL import Image, ImageDraw
 import render, chars
@@ -39,7 +39,7 @@ def build(b, audios, workdir, out_mp4):
         durs = [len(p_)/r for p_ in parts]; durs[-1] += len(gap)/rate
         for x, dur in zip(s["dialogue"], durs):
             n += 1; p = os.path.join(workdir, f"{n:03d}.png")
-            subtitle(base, x["speaker"], x["text"]).save(p); entries.append((p, dur))
+            (subtitle(base, x["speaker"], x["text"]) if render.show_subtitles(b) else base).save(p); entries.append((p, dur))
             timeline.append((t, t+dur, x["speaker"])); t += dur
     a = np.concatenate(pieces).astype(np.float32); a = a/max(1, np.abs(a).max())*0.85*32767
     import scipy.io.wavfile as wv; wav = os.path.join(workdir, "voice.wav"); wv.write(wav, rate, a.astype(np.int16))
