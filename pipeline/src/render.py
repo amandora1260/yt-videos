@@ -11,8 +11,8 @@ UP=(52,211,153); DN=(248,113,113)
 SPK_COL = {"焼きもろこし": (244,114,182), "とうもろこし": (250,204,21)}
 NO_HEAD = "。、）」』％%！？!?ー"
 # 字幕（画面下の話者名ラベル＋台詞の帯）を出すかどうか。kindごとの既定値で、原稿JSONに "show_subtitles": true/false を書けば個別に上書きできる。
-# 音声をまとめて作って無音で区切っているため字幕と声が1行ずれることがあり、当面は本編・ショートとも出さない（戻すときは True に）
-SHOW_SUBTITLES = {"main": False, "short": False}
+# 音声をまとめて作って無音で区切っているため字幕と声が1行ずれることがある。消すときは False に
+SHOW_SUBTITLES = {"main": True, "short": True}
 def show_subtitles(b):
     v = b.get("show_subtitles")
     return SHOW_SUBTITLES.get(b.get("kind", "main"), True) if v is None else bool(v)
