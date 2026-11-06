@@ -8,7 +8,7 @@ W, H = 1280, 720
 FD = "/usr/share/fonts/opentype/noto/"
 def F(w, s): return ImageFont.truetype(FD + f"NotoSansCJK-{w}.ttc", s, index=0)
 _A = os.path.join(os.path.dirname(__file__), "..", "assets")
-STYLE = os.environ.get("THUMB_STYLE", "A")              # 毎日使う型
+STYLE = os.environ.get("THUMB_STYLE", "D")              # 毎日使う型（D：チャート背景型）
 UP = (34, 197, 94); DN = (239, 68, 68); NEU = (250, 204, 21)
 YEL = (255, 222, 0); BLK = (10, 10, 14); WHT = (255, 255, 255)
 
