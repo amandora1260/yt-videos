@@ -1,7 +1,7 @@
 """GitHub Actions用：scripts/ の原稿JSONから動画を作り、videos/ と status/ に書き出す"""
 import json, os, sys, time, traceback
 sys.path.insert(0, os.path.dirname(__file__))
-import tts, anim, short
+import tts, anim, short, thumb
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "amandora1260/yt-videos")
 
@@ -16,6 +16,11 @@ def run(path):
         else:
             audios, calls = tts.synth_slides(b["slides"]); st["tts_calls"] = calls
             sec = anim.build(b, audios, f"/tmp/w_{name}", out)
+            try:                                               # サムネ（失敗しても動画は出す）
+                tp = thumb.make(b, f"videos/{name}_thumb.png")
+                st["thumb_url"] = f"https://raw.githubusercontent.com/{REPO}/main/{tp}"
+            except Exception as e:
+                traceback.print_exc(); st["thumb_error"] = str(e)[:300]
         st.update(ok=True, seconds=round(sec, 1), mb=round(os.path.getsize(out)/1e6, 1),
                   url=f"https://raw.githubusercontent.com/{REPO}/main/{out}")
     except Exception as e:
