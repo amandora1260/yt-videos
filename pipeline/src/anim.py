@@ -31,11 +31,13 @@ def build(b, audios, workdir, out_mp4):
     os.makedirs(workdir, exist_ok=True); fdir = os.path.join(workdir, "c"); os.makedirs(fdir, exist_ok=True)
     rate = audios[0][1]; gap = np.zeros(int(rate*0.5), np.int16)
     pieces, entries, timeline, t, n = [], [], [], 0.0, 0
-    for s, (pcm, r) in zip(b["slides"], audios):
+    for s, au in zip(b["slides"], audios):
+        pcm, r = au[0], au[1]; parts = au[2] if len(au) > 2 else None
         seg = np.concatenate([pcm, gap]); pieces.append(seg); total = len(seg)/rate
         base = render.render_slide(b, s)
-        import short as _sh                                    # 声の「間」で発言ごとに区切る（口パクと字幕を声に合わせる）
-        parts = _sh.split_lines(pcm, r, s["dialogue"]) if len(s["dialogue"]) > 1 else [pcm]
+        if parts is None or len(parts) != len(s["dialogue"]):   # 文字起こしで切れなかったときは「間」で推測
+            import short as _sh
+            parts = _sh.split_lines(pcm, r, s["dialogue"]) if len(s["dialogue"]) > 1 else [pcm]
         durs = [len(p_)/r for p_ in parts]; durs[-1] += len(gap)/rate
         for x, dur in zip(s["dialogue"], durs):
             n += 1; p = os.path.join(workdir, f"{n:03d}.png")

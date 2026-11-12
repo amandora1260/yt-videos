@@ -14,7 +14,7 @@ def run(path):
         if kind == "short":
             sec, _ = short.build(b, out, f"/tmp/w_{name}")
         else:
-            audios, calls = tts.synth_slides(b["slides"]); st["tts_calls"] = calls
+            audios, calls = tts.synth_slides(b["slides"], with_lines=True); st["tts_calls"] = calls
             sec = anim.build(b, audios, f"/tmp/w_{name}", out)
             try:                                               # サムネ（失敗しても動画は出す）
                 tp = thumb.make(b, f"videos/{name}_thumb.png")

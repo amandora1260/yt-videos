@@ -15,7 +15,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,7 +26,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -q numpy pillow scipy requests
+      - run: pip install -q numpy pillow scipy requests faster-whisper
+      - name: 文字起こしモデルの保存場所（字幕ずれ防止用。2回目以降は再ダウンロードしない）
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-small-v1
       - name: 原稿から動画を作る
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

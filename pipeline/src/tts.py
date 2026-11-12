@@ -122,8 +122,9 @@ def _split_by_pauses(pcm, rate, weights):
         out.append(seg.astype(np.int16))
     return out
 
-def synth_slides(slides, max_chars=None):
-    """スライドを数枚ずつまとめて音声にし（呼び出し回数を節約）、スライドごとに切り分けて返す"""
+def synth_slides(slides, max_chars=None, with_lines=False):
+    """スライドを数枚ずつまとめて音声にし（呼び出し回数を節約）、スライドごとに切り分けて返す。
+    with_lines=True なら (音声, レート, 発言ごとの音声のリスト or None) を返す"""
     import time
     max_chars = max_chars or int(os.environ.get("TTS_CHUNK_CHARS", "700"))
     groups, cur, cur_len = [], [], 0
@@ -141,9 +142,17 @@ def synth_slides(slides, max_chars=None):
                 last = ti == len(s["dialogue"]) - 1 and si < len(g) - 1
                 dialogue.append({"speaker": t["speaker"], "text": t["text"] + (" [long pause]" if last else "")})
         pcm, rate = synth_dialogue(dialogue)
-        weights = [sum(len(t["text"]) + 4 for t in s["dialogue"]) for s in g]
-        pieces = _split_by_pauses(pcm, rate, weights) if len(g) > 1 else [pcm]
-        result += [(p, rate) for p in pieces]
+        import align                                     # 文字起こしで発言の始まりを見つけて切る（字幕ずれ防止）
+        lines = align.cut(pcm, rate, [t["text"] for s in g for t in s["dialogue"]])
+        if lines is not None:
+            k = 0
+            for s in g:
+                ls = lines[k:k + len(s["dialogue"])]; k += len(s["dialogue"])
+                result.append((np.concatenate(ls), rate, ls) if with_lines else (np.concatenate(ls), rate))
+        else:                                            # 使えないときは従来の方法（「間」と文字数で推測）
+            weights = [sum(len(t["text"]) + 4 for t in s["dialogue"]) for s in g]
+            pieces = _split_by_pauses(pcm, rate, weights) if len(g) > 1 else [pcm]
+            result += [(p, rate, None) if with_lines else (p, rate) for p in pieces]
         if os.environ.get("MOCK_TTS") != "1" and gi < len(groups) - 1:
             time.sleep(int(os.environ.get("TTS_WAIT_SEC", "25")))
     return result, len(groups)

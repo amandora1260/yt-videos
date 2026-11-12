@@ -73,7 +73,8 @@ def build(b, out_mp4, workdir, pcm=None, rate=None):
     if pcm is None:
         pcm, rate = tts.synth_dialogue(b["dialogue"])
         import scipy.io.wavfile as wv; wv.write(os.path.join(workdir, "raw.wav"), rate, pcm)   # 作り直し用に保存
-    pieces = split_lines(pcm, rate, b["dialogue"])
+    import align                                            # 文字起こしで発言の始まりを見つけて切る（字幕ずれ防止）
+    pieces = align.cut(pcm, rate, [t["text"] for t in b["dialogue"]]) or split_lines(pcm, rate, b["dialogue"])
     entries = []; aud = []
     gap = np.zeros(int(rate * 0.12), np.int16)
     for i, (t, p) in enumerate(zip(b["dialogue"], pieces)):
