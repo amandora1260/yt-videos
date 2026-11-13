@@ -73,6 +73,10 @@ def cut(pcm, rate, lines):
         if hi > lo:
             win = rms[lo:hi]; q = win <= win.min() * 1.5 + 1  # 静かな所が続く区間の真ん中
             idx = np.where(q)[0]; c = lo + int(idx[np.argmin(np.abs(idx - (c - lo - 5)))])
+        thr = 0.05 * np.percentile(rms, 90)               # 無音が長いときは、声の出だしの0.12秒前まで寄せる
+        lim = min(n - 1, c + 300); k = c                 # 続く無音の中だけを進む（最大3秒）
+        while k + 1 < lim and rms[k + 1] < thr: k += 1
+        c = max(c, k - 12)
         c = max(c, prev + 20); cuts.append(c); prev = c
     edges = [0] + [c * fw for c in cuts] + [len(pcm)]
     return [pcm[a:b] for a, b in zip(edges[:-1], edges[1:])]
