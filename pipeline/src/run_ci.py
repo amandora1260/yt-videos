@@ -13,8 +13,14 @@ def run(path):
     try:
         if kind == "short":
             sec, _ = short.build(b, out, f"/tmp/w_{name}")
+            st["subtitles"] = "オフ（文字起こしで声に合わせられなかったため）" if b.get("_unsynced") else "声に合わせ済み"
         else:
             audios, calls = tts.synth_slides(b["slides"], with_lines=True); st["tts_calls"] = calls
+            if any(a[2] is None for a in audios if len(b["slides"]) and len(a) > 2):
+                b["show_subtitles"] = False                    # 声に合わせて切れなかった日は、ずれた字幕を出さない
+                st["subtitles"] = "オフ（文字起こしで声に合わせられなかったため）"
+            else:
+                st["subtitles"] = "声に合わせ済み"
             sec = anim.build(b, audios, f"/tmp/w_{name}", out)
             try:                                               # サムネ（失敗しても動画は出す）
                 tp = thumb.make(b, f"videos/{name}_thumb.png")

@@ -45,10 +45,13 @@ def cut(pcm, rate, lines):
     """発言ごとに切り分けた音声のリストを返す（失敗したら None）"""
     if len(lines) <= 1: return [pcm]
     if os.environ.get("MOCK_TTS") == "1" or os.environ.get("NO_ALIGN") == "1": return None
-    try:
-        starts = line_starts(lines, _words(pcm, rate))
-    except Exception as e:                                  # ライブラリがない・モデルを取れない等
-        print("文字起こしでの切り分けは使えませんでした：", e); return None
+    starts = None
+    for attempt in range(2):                                # 一時的な失敗（モデルの取得など）に備えて1回やり直す
+        try:
+            starts = line_starts(lines, _words(pcm, rate)); break
+        except Exception as e:                              # ライブラリがない・モデルを取れない等
+            print("文字起こしでの切り分けに失敗：", e)
+    if starts is None: return None
     dur = len(pcm) / rate
     found = sum(s is not None for s in starts[1:])
     if found < (len(lines) - 1) * 0.6:                      # 照合できた発言が少なすぎるときは信用しない
